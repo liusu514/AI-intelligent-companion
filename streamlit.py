@@ -5,8 +5,8 @@ from openai import OpenAI
 
 print("------->重新执行此文件,渲染展示界面")
 
-#数据持久化存储文件路径（用户目录下）
-DATA_DIR = os.path.join(os.path.expanduser("~"), ".ai伴侣")
+#数据持久化存储文件路径（项目目录下）
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ai伴侣")
 DATA_FILE = os.path.join(DATA_DIR, "chat_data.json")
 
 #确保数据目录存在
