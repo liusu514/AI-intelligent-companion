@@ -20,7 +20,7 @@ st.title("AI智能伴侣")
 #logo
 st.logo("resources/logo.png")
 #系统提示词
-system_prompt = "你是一个ai助理,请你用温柔的预期回答用户的问题"
+system_prompt = "你是一个ai助理,请你用温柔的语气回答用户的问题"
 
 #初始化聊天信息
 if "messages" not in st.session_state:
