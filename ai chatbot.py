@@ -110,12 +110,12 @@ if "initialized" not in st.session_state:
     #加载用户设置
     settings = load_settings()
     if settings:
-        st.session_state.ai_name = settings.get("ai_name", "小美")
-        st.session_state.custom_personality = settings.get("custom_personality", "可爱温柔的台湾人")
+        st.session_state.ai_name = settings.get("ai_name", "ai伴侣")
+        st.session_state.custom_personality = settings.get("custom_personality", "")
         print(f"------->加载用户设置成功")
     else:
-        st.session_state.ai_name = "小美"
-        st.session_state.custom_personality = "可爱温柔的台湾人"
+        st.session_state.ai_name = "ai伴侣"
+        st.session_state.custom_personality = ""
 
     #加载聊天历史
     chat_data = load_chat_history()
@@ -158,7 +158,7 @@ with st.sidebar:
     #自定义性格设置
     st.subheader("自定义性格")
     new_custom_personality = st.text_area(
-        "描述伴侣的性格特点",
+        "请输入性格",
         value=st.session_state.custom_personality,
         height=100,
         help="描述你希望伴侣的性格，例如：温柔体贴、活泼开朗、高冷傲娇等"
