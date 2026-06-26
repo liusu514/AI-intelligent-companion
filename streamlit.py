@@ -1,8 +1,45 @@
 import streamlit as st
 import os
+import json
 from openai import OpenAI
 
 print("------->重新执行此文件,渲染展示界面")
+
+#数据持久化存储文件路径（用户目录下）
+DATA_DIR = os.path.join(os.path.expanduser("~"), ".ai伴侣")
+DATA_FILE = os.path.join(DATA_DIR, "chat_data.json")
+
+#确保数据目录存在
+if not os.path.exists(DATA_DIR):
+    os.makedirs(DATA_DIR)
+    print(f"------->创建数据目录: {DATA_DIR}")
+
+def load_data():
+    """从文件加载数据"""
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            return data
+        except Exception as e:
+            print(f"加载数据失败: {e}")
+    return None
+
+def save_data():
+    """保存数据到文件"""
+    try:
+        data = {
+            "ai_name": st.session_state.ai_name,
+            "custom_personality": st.session_state.custom_personality,
+            "chat_history": st.session_state.chat_history,
+            "current_chat_id": st.session_state.current_chat_id,
+            "messages": st.session_state.messages
+        }
+        with open(DATA_FILE, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print(f"------->数据已保存到 {DATA_FILE}")
+    except Exception as e:
+        print(f"保存数据失败: {e}")
 
 #设置页面的配置项
 st.set_page_config(
@@ -19,27 +56,37 @@ st.set_page_config(
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-#初始化session_state中的参数
-if "ai_name" not in st.session_state:
-    st.session_state.ai_name = "小美"
-if "personality" not in st.session_state:
-    st.session_state.personality = """现在是用户的真实伴侣，请完全代入伴侣角色。
-    规则：
-        1.每次只回复1条消息 
-        2.禁止任何场景或状态描述性文字 
-        3.匹配用户的语言 
-        4.回复简短，像微信聊天一样
-        5.有需要的话可以用emoji表情
-        6.用符合伴侣性格的方式对话
-        7.回复的内容，要充分体现伴侣的性格特征
-    伴侣性格：
-        - 可爱温柔的台湾人
-        你必须严格遵守上述规则来回答用户
-        """
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = {}
-if "current_chat_id" not in st.session_state:
-    st.session_state.current_chat_id = None
+#默认提示词（后台）
+DEFAULT_SYSTEM_PROMPT = """现在是用户的真实伴侣，请完全代入伴侣角色。
+                            规则：
+                            1.每次只回复1条消息
+                            2.禁止任何场景或状态描述性文字
+                            3.匹配用户的语言
+                            4.回复简短，像微信聊天一样
+                            5.有需要的话可以用emoji表情
+                            6.用符合伴侣性格的方式对话
+                            7.回复的内容，要充分体现伴侣的性格特征
+                            你必须严格遵守上述规则来回答用户
+                        """
+
+#初始化session_state中的参数（优先从文件加载）
+if "initialized" not in st.session_state:
+    #尝试从文件加载数据
+    saved_data = load_data()
+    if saved_data:
+        st.session_state.ai_name = saved_data.get("ai_name", "小美")
+        st.session_state.custom_personality = saved_data.get("custom_personality", "可爱温柔的台湾人")
+        st.session_state.chat_history = saved_data.get("chat_history", {})
+        st.session_state.current_chat_id = saved_data.get("current_chat_id", None)
+        st.session_state.messages = saved_data.get("messages", [])
+        print(f"------->从文件加载数据成功，历史会话数量: {len(st.session_state.chat_history)}")
+    else:
+        st.session_state.ai_name = "小美"
+        st.session_state.custom_personality = "可爱温柔的台湾人"
+        st.session_state.chat_history = {}
+        st.session_state.current_chat_id = None
+        st.session_state.messages = []
+    st.session_state.initialized = True
 
 #大标题
 st.title(st.session_state.ai_name)
@@ -59,20 +106,22 @@ with st.sidebar:
     )
     if new_ai_name != st.session_state.ai_name:
         st.session_state.ai_name = new_ai_name
+        save_data()
         st.rerun()
 
     st.divider()
 
-    #人物性格设置
-    st.subheader("人物性格")
-    new_personality = st.text_area(
-        "描述AI的性格特点",
-        value=st.session_state.personality,
+    #自定义性格设置
+    st.subheader("自定义性格")
+    new_custom_personality = st.text_area(
+        "描述伴侣的性格特点",
+        value=st.session_state.custom_personality,
         height=100,
-        help="描述你希望AI扮演的角色性格"
+        help="描述你希望伴侣的性格，例如：温柔体贴、活泼开朗、高冷傲娇等"
     )
-    if new_personality != st.session_state.personality:
-        st.session_state.personality = new_personality
+    if new_custom_personality != st.session_state.custom_personality:
+        st.session_state.custom_personality = new_custom_personality
+        save_data()
         st.rerun()
 
     st.divider()
@@ -98,7 +147,7 @@ with st.sidebar:
             st.session_state.chat_history[st.session_state.current_chat_id] = {
                 "messages": st.session_state.messages.copy(),
                 "name": st.session_state.ai_name,
-                "personality": st.session_state.personality,
+                "custom_personality": st.session_state.custom_personality,
                 "summary": summary if summary else "新对话"
             }
             #限制最多保留3个历史会话
@@ -110,46 +159,58 @@ with st.sidebar:
         new_chat_id = f"chat_{uuid.uuid4().hex[:8]}"
         st.session_state.current_chat_id = new_chat_id
         st.session_state.messages = []
+        save_data()
         st.rerun()
 
     #显示历史会话列表
     if st.session_state.chat_history:
         st.subheader("历史会话")
         for chat_id, chat_data in st.session_state.chat_history.items():
-            #显示会话预览
+            #显示会话预览和删除按钮
             summary = chat_data.get("summary", "新对话")
-            preview = f"{summary}"
-            if st.button(preview, key=f"chat_{chat_id}"):
-                import uuid
-                #保存当前对话
-                if st.session_state.messages:
-                    #如果没有current_chat_id，先创建一个
-                    if not st.session_state.current_chat_id:
-                        st.session_state.current_chat_id = f"chat_{uuid.uuid4().hex[:8]}"
-                    #获取最后一条用户消息作为摘要
-                    current_summary = ""
-                    for msg in reversed(st.session_state.messages):
-                        if msg["role"] == "user":
-                            current_summary = msg["content"][:20] + "..." if len(msg["content"]) > 20 else msg["content"]
-                            break
-                    #保存到历史
-                    st.session_state.chat_history[st.session_state.current_chat_id] = {
-                        "messages": st.session_state.messages.copy(),
-                        "name": st.session_state.ai_name,
-                        "personality": st.session_state.personality,
-                        "summary": current_summary if current_summary else "新对话"
-                    }
-                    #限制最多保留3个历史会话
-                    while len(st.session_state.chat_history) > 3:
-                        #获取最旧的会话ID（第一个）
-                        oldest_chat_id = list(st.session_state.chat_history.keys())[0]
-                        del st.session_state.chat_history[oldest_chat_id]
-                #切换到选中的对话
-                st.session_state.current_chat_id = chat_id
-                st.session_state.messages = chat_data["messages"].copy()
-                st.session_state.ai_name = chat_data["name"]
-                st.session_state.personality = chat_data["personality"]
-                st.rerun()
+            col1, col2 = st.columns([4, 1])
+            with col1:
+                if st.button(summary, key=f"chat_{chat_id}", use_container_width=True):
+                    import uuid
+                    #保存当前对话
+                    if st.session_state.messages:
+                        #如果没有current_chat_id，先创建一个
+                        if not st.session_state.current_chat_id:
+                            st.session_state.current_chat_id = f"chat_{uuid.uuid4().hex[:8]}"
+                        #获取最后一条用户消息作为摘要
+                        current_summary = ""
+                        for msg in reversed(st.session_state.messages):
+                            if msg["role"] == "user":
+                                current_summary = msg["content"][:20] + "..." if len(msg["content"]) > 20 else msg["content"]
+                                break
+                        #保存到历史
+                        st.session_state.chat_history[st.session_state.current_chat_id] = {
+                            "messages": st.session_state.messages.copy(),
+                            "name": st.session_state.ai_name,
+                            "custom_personality": st.session_state.custom_personality,
+                            "summary": current_summary if current_summary else "新对话"
+                        }
+                        #限制最多保留3个历史会话
+                        while len(st.session_state.chat_history) > 3:
+                            #获取最旧的会话ID（第一个）
+                            oldest_chat_id = list(st.session_state.chat_history.keys())[0]
+                            del st.session_state.chat_history[oldest_chat_id]
+                    #切换到选中的对话
+                    st.session_state.current_chat_id = chat_id
+                    st.session_state.messages = chat_data["messages"].copy()
+                    st.session_state.ai_name = chat_data["name"]
+                    st.session_state.custom_personality = chat_data["custom_personality"]
+                    save_data()
+                    st.rerun()
+            with col2:
+                if st.button("🗑️", key=f"delete_{chat_id}", help="删除此会话"):
+                    del st.session_state.chat_history[chat_id]
+                    #如果删除的是当前会话，清空当前对话
+                    if st.session_state.current_chat_id == chat_id:
+                        st.session_state.current_chat_id = None
+                        st.session_state.messages = []
+                    save_data()
+                    st.rerun()
 
     st.divider()
 
@@ -167,8 +228,8 @@ with st.sidebar:
     💝 用心陪伴，温暖每一刻
     """)
 
-#使用session_state中的参数
-system_prompt = st.session_state.personality
+#构建完整的系统提示词（默认提示词 + 用户自定义性格）
+system_prompt = DEFAULT_SYSTEM_PROMPT + "\n伴侣性格：\n- " + st.session_state.custom_personality
 
 #展示聊天信息
 for message in st.session_state.messages:
@@ -221,6 +282,7 @@ if prompt:#字符串会自动转换为布尔值，如果字符串为空，则为
         #保存大模型返回的结果
         st.session_state.messages.append({"role": "assistant", "content": response})
         print(f"------->保存消息后，session_state中的消息数量: {len(st.session_state.messages)}")
+        save_data()
     except Exception as e:
         error_msg = f"调用AI大模型时出现错误: {str(e)}"
         print(error_msg)
