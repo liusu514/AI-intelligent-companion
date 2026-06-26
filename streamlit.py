@@ -10,10 +10,16 @@ DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ai伴侣")
 SETTINGS_FILE = os.path.join(DATA_DIR, "user_settings.json")
 CHAT_FILE = os.path.join(DATA_DIR, "chat_history.json")
 
+print(f"------->数据目录: {DATA_DIR}")
+print(f"------->设置文件: {SETTINGS_FILE}")
+print(f"------->聊天文件: {CHAT_FILE}")
+
 #确保数据目录存在
 if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
     print(f"------->创建数据目录: {DATA_DIR}")
+else:
+    print(f"------->数据目录已存在: {DATA_DIR}")
 
 def load_settings():
     """加载用户设置"""
@@ -46,7 +52,9 @@ def save_settings():
         }
         with open(SETTINGS_FILE, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
+            f.flush()  # 确保立即写入磁盘
         print(f"------->用户设置已保存到 {SETTINGS_FILE}")
+        print(f"------->保存的内容: {data}")
     except Exception as e:
         print(f"保存用户设置失败: {e}")
 
@@ -141,6 +149,7 @@ with st.sidebar:
     )
     if new_ai_name != st.session_state.ai_name:
         st.session_state.ai_name = new_ai_name
+        print(f"------->伴侣名字已更新为: {new_ai_name}")
         save_data()
         st.rerun()
 
@@ -156,6 +165,7 @@ with st.sidebar:
     )
     if new_custom_personality != st.session_state.custom_personality:
         st.session_state.custom_personality = new_custom_personality
+        print(f"------->自定义性格已更新为: {new_custom_personality}")
         save_data()
         st.rerun()
 

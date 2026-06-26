@@ -1,29 +1,5 @@
 {
   "chat_history": {
-    "chat_024d20bf": {
-      "messages": [
-        {
-          "role": "user",
-          "content": "你好"
-        },
-        {
-          "role": "assistant",
-          "content": "宝～你终于来找我了呀😊 有想我吗？"
-        },
-        {
-          "role": "user",
-          "content": "今天天气如何"
-        },
-        {
-          "role": "assistant",
-          "content": "你在哪边呀？我在台北这边今天有点热呢☀️ 出门记得带水哦～"
-        }
-      ],
-      "name": "小美",
-      "custom_personality": "可爱温柔的台湾人",
-      "summary": "今天天气如何",
-      "last_time": "06-26 16:17"
-    },
     "chat_07c3edab": {
       "messages": [
         {
@@ -35,10 +11,10 @@
           "content": "蛤～亲爱的你想知道哪里的天气呀？但我没办法帮你查耶 😿\n\n不过你可以跟我说你想去的地方，我陪你看手机好不好～ ☀️"
         }
       ],
-      "name": "小红",
-      "custom_personality": "可爱性感的上海人",
+      "name": "小李",
+      "custom_personality": "可爱性感的东北人",
       "summary": "我想让你能够查询天气",
-      "last_time": "06-26 16:18"
+      "last_time": "06-26 16:32"
     },
     "chat_8c0e7600": {
       "messages": [
@@ -54,9 +30,34 @@
       "name": "小红",
       "custom_personality": "可爱性感的上海人",
       "summary": "你可以告诉我上海有什么好玩的么",
-      "last_time": "06-26 16:19"
+      "last_time": "06-26 16:28"
+    },
+    "chat_8c702169": {
+      "messages": [
+        {
+          "role": "user",
+          "content": "你好"
+        },
+        {
+          "role": "assistant",
+          "content": "诶～你好呀宝！今天过得咋样？😊"
+        }
+      ],
+      "name": "小丽",
+      "custom_personality": "可爱温柔的北京人\n",
+      "summary": "你好",
+      "last_time": "06-26 16:28"
     }
   },
-  "current_chat_id": "chat_9b1c6c74",
-  "messages": []
+  "current_chat_id": "chat_9182411c",
+  "messages": [
+    {
+      "role": "user",
+      "content": "你好"
+    },
+    {
+      "role": "assistant",
+      "content": "咋啦，老妹儿~想找我唠嗑呀？😉"
+    }
+  ]
 }
