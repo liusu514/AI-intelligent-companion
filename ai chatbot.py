@@ -6,7 +6,7 @@ from openai import OpenAI
 print("------->重新执行此文件,渲染展示界面")
 
 #数据持久化存储文件路径（项目目录下）
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ai伴侣")
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ai history")
 SETTINGS_FILE = os.path.join(DATA_DIR, "user_settings.json")
 CHAT_FILE = os.path.join(DATA_DIR, "chat_history.json")
 
